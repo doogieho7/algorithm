@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//#define DEBUG		1
 #define CITY_MAX	8
 
 const char *input = "input.txt";
@@ -18,6 +19,15 @@ int path_count;
 double city_pathlen;
 //도시수
 int city_count;
+
+void path_display() {
+#ifdef DEBUG
+	cout << "path: ";
+	for (int i = 0; i < path_count; ++i)
+		cout << path[i] << " ";
+	cout << endl;
+#endif
+}
 
 //전역 변수 초기화
 void init() {
@@ -102,12 +112,39 @@ double shortest_pathlen(int city_num) {
 double shortestPath(void) {
 	//기저 사례: 모든 도시를 다 방문했을 때는 시작도시로 돌아가고 종료한다.
 	if (path_count == city_count) {
-		return city_pathlen + dist[path[0]][path[path_count-1]];
+		//return city_pathlen + dist[path[0]][path[path_count-1]];
+		path_display();
+		return city_pathlen;
 	}
 
 	double ret = 987654321;	//매우 큰값
 
-	for (int next = 0; next < city_pathlen; ++next)
+	//다음 방문할 도시를 전부 시도해 본다 
+	for (int next = 0; next < city_count; ++next) {
+		if (visited[next] == true) 	continue;
+
+		int here = path[path_count-1];
+		path[path_count++] = next;
+		visited[next] = true;
+
+		//city_pathlen 업데이트
+		double next_dist = dist[here][next];
+		city_pathlen += next_dist;
+
+		//cout << "(here, next) = (" << here << ", " << next << ") ";
+		//cout << "dist = " << next_dist << endl;
+
+		double pathlen = shortestPath();
+		ret = min(ret, pathlen);
+
+		visited[next] = false;
+		city_pathlen -= next_dist;
+		path_count--;
+	}
+	
+	// ret는 next도시을 방문할수 있는 가장짧은 거리
+	return ret;
+}
 
 
 int main(void) {
@@ -126,13 +163,26 @@ int main(void) {
 
 		in >> city_count;
 
-		// read dist data 
+		// read distance data 
 		for (int i = 0; i < city_count; ++i) 
 			for (int j = 0; j < city_count; ++j) 
 				in >> dist[i][j];
 		
 		// print shortest path length
-		cout << shortest_pathlen(0) << endl;
+		//cout << shortest_pathlen(0) << endl;
+		double ret = 987654321;
+		for (int i = 0; i < city_count; ++i) {
+			path[path_count++] = i;
+			visited[i] = true;
+
+			double path = shortestPath();
+			ret = min(ret, path);
+
+			path_count--;
+			visited[i] = false;
+		}
+
+		cout << ret << endl;
 	}
 
 
