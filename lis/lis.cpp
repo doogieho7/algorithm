@@ -33,7 +33,7 @@ void array_print(void) {
 	cout << endl;
 }
 
-//picked에 index들어가 있고 pi
+//strongly_subsequence() 인지 체크
 bool strongly_subseq(void) {
 
 	if (pcount == 1)
@@ -52,14 +52,17 @@ bool strongly_subseq(void) {
 }
 
 void combi(int n, int r) {
-	//기저 조건
+	//기저 조건1. 앞에서 strongly subseq 조건 체크하기 때문에 len만 비교함
 	if (r == 0) {
-		array_print();	
+#if 0
 		bool strongly = strongly_subseq();
 		if (strongly) {
 			max_len = max(max_len, pcount);
 			cout << "strongly_subsequence max len = " << max_len << endl;
 		}
+		array_print();	
+#endif
+		max_len = max(max_len, pcount);
 
 		return;
 	}
@@ -67,6 +70,12 @@ void combi(int n, int r) {
 	int smallest = (pcount == 0) ? 0 : picked[pcount-1]+1;
 
 	for (int pos = smallest; pos < N; ++pos) {
+		// strongly subseq 조건 체크
+		// 조건이 아니면 이후 비교 pass
+		if (pcount > 0) 
+			if (a[picked[pcount-1]] >= a[pos]) 
+				break;
+
 		picked[pcount++] = pos;
 
 		combi(n, r-1);
@@ -152,9 +161,20 @@ int main(void) {
 		//read 원소 list
 		for (int i = 0; i < N; ++i) {
 			in >> a[i];
-
 			A.push_back(a[i]);
 		}
+
+#if 0
+		for (int j = N; j > 0; --j) {
+			//nCr -> nC1
+			combi(N, j);
+
+			if (max_len != 0) {
+				cout << max_len << endl;
+				break;
+			}
+		}
+#endif
 
 		//cout << lis(A) << endl;
 		//cout << lis2(0) << endl;
