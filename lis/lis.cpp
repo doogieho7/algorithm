@@ -12,7 +12,7 @@ int picked[MAX];
 int pcount;
 
 int max_len;
-int cache[MAX];
+int cache[MAX+1];
 
 //전역 변수 초기화
 void init(void) {
@@ -117,6 +117,21 @@ int lis2(int start) {
 	return ret;
 }
 
+// start = -1부터 시작할 수 있다
+int lis3(int start) {
+	int &ret = cache[start+1];
+	if (ret != -1)
+		return ret;
+
+	//항상 S[start]는 있기 때문에 길이는 최하 1
+	ret = 1;
+	for (int next = start+1; next < N; ++next) 
+		if (start == -1 || a[start] < a[next])
+			ret = max(ret, lis3(next) + 1);
+
+	return ret;
+}
+
 int main(void) {
 	ifstream in(input);
 	if (!in) {
@@ -142,7 +157,8 @@ int main(void) {
 		}
 
 		//cout << lis(A) << endl;
-		cout << lis2(0) << endl;
+		//cout << lis2(0) << endl;
+		cout << lis3(-1)-1 << endl;
 	}
 
 	return 0;
