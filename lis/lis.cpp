@@ -12,12 +12,14 @@ int picked[MAX];
 int pcount;
 
 int max_len;
+int cache[MAX];
 
 //전역 변수 초기화
 void init(void) {
 	for (int i = 0; i < MAX; ++i) {
 		a[i] = -1;
 		picked[i] = -1;
+		cache[i] = -1;
 	}
 
 	N = 0;
@@ -73,6 +75,48 @@ void combi(int n, int r) {
 	}
 }
 
+//책 소스 코드
+#include <vector>
+
+int lis(const vector<int>& A) {
+	//기저 사례: A가 텅 비어 있을 때
+	if (A.empty())
+		return 0;
+
+	int ret = 0;
+	for (int i = 0; i < A.size(); ++i) {
+		vector<int> B;
+		for (int j = 0; j < A.size(); ++j) {
+			//A[i] 선택, A[i] 보다 큰 수 배열을 만든다.
+			if (A[i] < A[j])
+				B.push_back(A[j]);
+		}
+
+		ret = max(ret, 1 + lis(B));
+	}
+
+	return ret;
+}
+
+//a[start]에서 시작하는 증가 부분 수열 중 최대 길이를 반환
+int lis2(int start) {
+	//cout << "lis2(" << start << ")" << endl; 
+
+	int& ret = cache[start];
+	if (ret != -1) {
+		//cout << "return lis2(" << start << ") = " << ret << endl;
+		return ret;
+	}
+
+	//항상 a[start]는 있기 때문에 길이는 최하 1
+	ret = 1;
+	for (int next = start+1; next < N; ++next)
+		if (a[start] < a[next])
+			ret = max(ret, lis2(next) + 1);
+
+	return ret;
+}
+
 int main(void) {
 	ifstream in(input);
 	if (!in) {
@@ -83,19 +127,22 @@ int main(void) {
 	int tcase;
 	in >> tcase;
 
-	//temp
-	tcase = 1;
-
 	while (tcase-- > 0) {
 		init();
 
 		in >> N;
 
+		vector<int> A;
+
 		//read 원소 list
-		for (int i = 0; i < N; ++i)
+		for (int i = 0; i < N; ++i) {
 			in >> a[i];
 
-		for (int j = N; j > 0; --j)
+			A.push_back(a[i]);
+		}
+
+		//cout << lis(A) << endl;
+		cout << lis2(0) << endl;
 	}
 
 	return 0;
