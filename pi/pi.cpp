@@ -13,11 +13,14 @@ const int INTMAX = 987654321;
 int a[MAX];
 int b[MAX], M;
 char buf[MAX+1];
+int cache[MAX+2];
 
 //전역변수 초기화
 void init(void) {
 	M = 0;
-	//N = 0;
+
+	for (int i = 0; i < MAX+2; ++i)
+		cache[i] = -1;
 }
 
 //모든 숫자가 같은지 테스트
@@ -147,6 +150,72 @@ int pi(void) {
 	return ret;
 }
 
+//책 구현
+#include <string>
+#include <cmath>
+
+string N;
+
+//N[a..b] 구간의 난이도를 반환한다.
+int classify(int a, int b) {
+	//숫자 조각을 가져온다.
+	string M = N.substr(a, b-a+1);
+
+	//1. 첫 글자만으로 이루어진 무자열과 같으면 난이도는 1
+	if (M == string(M.size(), M[0]))
+		return 1;
+
+	// 등차수열인지 검사한다.
+	bool progressive = true;
+	for (int i = 0; i < M.size()-1; ++i) {
+		if (M[i+1]-M[i] != M[1] - M[0]) {
+			progressive = false;
+			break;
+		}
+	}
+
+	// 등차수열이고 공차가 1혹은 -1이면 난이도는 2
+	if (progressive == true && abs(M[1]-M[0]) == 1)
+		return 2;
+
+	// 두수가 번갈아 등장하는지 확인
+	bool alternating = true;
+	for (int i = 0; i < M.size()-1; ++i) {
+		if (M[i] != M[i%2]) {
+			alternating = false;
+			break;
+		}
+	}
+
+	if (alternating) return 4;		//두수가 번갈아 등장하면 난이도는 4
+	if (progressive) return 5;		//공차가 1 아닌 등차수열의 난이도는 5
+
+	return 10;
+}
+
+
+//수열 N[begin..]를 외우는 방법 중 난이도의 최소 합을 출력한다.
+int memorize(int begin) {
+	//기저 사례: 수열의 끝에 도달했을 경우
+	if (begin == N.size())
+		return 0;
+
+	//memoization
+	int &ret = cache[begin];
+	if (ret != -1)
+		return ret;
+
+	//초기값 - 최대값
+	ret = INTMAX;
+
+	for (int L = 3; L <= 5; ++L) 
+		if (begin + L <= N.size())
+			ret = min(ret, classify(begin, begin+L- 1)
+							+ memorize(begin+L));
+
+	return ret;
+}
+
 int main(void) {
 	ifstream in(input);
 	if (!in) {
@@ -173,7 +242,10 @@ int main(void) {
 		}
 		M = i;
 
-		cout << pi() << endl;
+		//cout << pi() << endl;
+		
+		N = buf;
+		cout << memorize(0) << endl;
 	}
 
 	return 0;
